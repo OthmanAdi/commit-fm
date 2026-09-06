@@ -31,7 +31,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Run tests
-        run: node --test "test/**/*.test.mjs"
+        run: node --test test/*.test.mjs
 
   render-check:
     name: Render every style and verify safe output

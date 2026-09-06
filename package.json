@@ -15,7 +15,7 @@
     "schema"
   ],
   "scripts": {
-    "test": "node --test \"test/**/*.test.mjs\"",
+    "test": "node --test test/*.test.mjs",
     "examples": "node scripts/render-examples.mjs"
   },
   "keywords": [
