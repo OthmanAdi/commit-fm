@@ -361,6 +361,21 @@ export async function buildState({ config, derived, now = () => new Date() }) {
   const pin = normalizeStringArray(cfg.pin).map((name) => sanitizeIdent(name));
   const exclude = normalizeStringArray(cfg.exclude).map((name) => sanitizeIdent(name));
 
+  // The profile repository excludes itself by default.
+  //
+  // On GitHub the repository whose name equals the account name is the one that
+  // renders the profile page, so it is the frame around the banner rather than a
+  // project worth announcing. Worse, it is self-reinforcing: this tool commits
+  // the rendered SVG into that very repository, which makes it the most recently
+  // pushed repository, which would make it permanently the thing "now playing".
+  // The first live install did exactly that and broadcast "Config files for my
+  // GitHub profile" as the current work.
+  //
+  // Pinning it is the deliberate opt out, for anyone whose profile repository
+  // genuinely is the project they want to show.
+  const pinSet = new Set(pin);
+  if (user && !pinSet.has(user)) exclude.push(user);
+
   const rawRepos = Array.isArray(derived?.repos) ? derived.repos : [];
   const allRepos = dedupeRepos(rawRepos);
   // Freshest-first order is the baseline for choosing `now`. Pin never

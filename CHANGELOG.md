@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+The profile repository now excludes itself. The repository named after your account
+renders your profile page rather than being a project, and because this tool commits its
+own output into it, it would otherwise be the most recently pushed repository forever and
+sit permanently in the now playing slot. The first live install did exactly that and
+announced "Config files for my GitHub profile" as the current work. Pin it to opt out.
+
 ## 0.1.0
 
 First release.

@@ -382,3 +382,52 @@ describe('loadConfig', () => {
     assert.equal(cfg.broadcast, null);
   });
 });
+
+describe('the profile repository excludes itself', () => {
+  const derived = (names) => ({
+    repos: names.map((name, i) => ({
+      name,
+      description: `${name} description`,
+      language: 'Rust',
+      url: '',
+      lastPushed: new Date(Date.now() - i * 60_000).toISOString(),
+      ageMinutes: i,
+    })),
+    stats: { pushesThisWeek: 3, privateContributions: 0, hourly: new Array(24).fill(0) },
+  });
+
+  test('the repo named after the user never becomes the one playing', async () => {
+    // The tool commits its own output into this repository, so without this
+    // rule the profile repo is always the freshest and would sit in the
+    // "now playing" slot permanently, announcing its own config files.
+    const state = await buildState({
+      config: { user: 'OthmanAdi', style: 'terminal', theme: 'dark' },
+      derived: derived(['OthmanAdi', 'margin', 'chronos']),
+    });
+    assert.equal(state.now.name, 'margin', 'the profile repo must not be the one playing');
+    assert.ok(
+      !state.rotation.some((r) => r.name === 'OthmanAdi'),
+      'the profile repo must not appear in the rotation either',
+    );
+  });
+
+  test('pinning the profile repo is the deliberate opt out', async () => {
+    const state = await buildState({
+      config: { user: 'OthmanAdi', style: 'terminal', theme: 'dark', pin: ['OthmanAdi'] },
+      derived: derived(['OthmanAdi', 'margin']),
+    });
+    assert.ok(
+      state.now.name === 'OthmanAdi' || state.rotation.some((r) => r.name === 'OthmanAdi'),
+      'a pinned profile repo must survive the automatic exclusion',
+    );
+  });
+
+  test('a user with only their profile repo still renders rather than crashing', async () => {
+    const state = await buildState({
+      config: { user: 'somebody', style: 'terminal', theme: 'dark' },
+      derived: derived(['somebody']),
+    });
+    assert.equal(typeof state.now.name, 'string');
+    assert.equal(state.rotation.length, 0);
+  });
+});

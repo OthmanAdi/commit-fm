@@ -125,6 +125,7 @@ No token to create. No account anywhere. Nothing to configure beyond those three
 | `style` | One of the seven skin ids above |
 | `theme` | `light`, `dark`, or `auto` |
 | `exclude` | Repository names to keep off the banner entirely. Applied last, after every other rule |
+| | Your profile repository, the one named after your account, is excluded automatically. It is the frame around the banner rather than a project, and this tool commits into it, so it would otherwise make itself the thing permanently playing. Pin it to override that |
 | `pin` | Repository names to put at the front of the rotation |
 
 ## Let an agent take the microphone
