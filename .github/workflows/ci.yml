@@ -1,0 +1,130 @@
+name: CI
+
+# Our own tests, run on every push and every pull request against main.
+# This is separate from .github/workflows/commit-fm.yml, which is the
+# workflow file users copy into their own profile repository, not something
+# that runs here.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: node --test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    steps:
+      # Pinned by full commit SHA, not by tag, so a moved tag cannot change
+      # what this workflow runs. The comment names what that SHA points to
+      # today; re-resolve it with, for example:
+      #   gh api repos/actions/checkout/commits/v7.0.1 --jq .sha
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Run tests
+        run: node --test "test/**/*.test.mjs"
+
+  render-check:
+    name: Render every style and verify safe output
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "20"
+
+      # This does not go through the CLI or the network: it calls
+      # src/index.mjs directly with a synthetic state so the check is fast
+      # and does not depend on GitHub's API being reachable or fast in CI.
+      # The script is written to the runner's temp directory at run time,
+      # it is not a file that lives in this repository.
+      - name: Render all seven styles from a synthetic state
+        run: |
+          mkdir -p "$RUNNER_TEMP/commit-fm-render-check"
+          cat > "$RUNNER_TEMP/render-all-styles.mjs" <<'EOF'
+          import { pathToFileURL } from "node:url";
+          import path from "node:path";
+          import { writeFileSync } from "node:fs";
+
+          const workspace = process.env.GITHUB_WORKSPACE;
+          const outDir = process.env.RENDER_OUT_DIR;
+          const indexUrl = pathToFileURL(path.join(workspace, "src", "index.mjs")).href;
+          const { render } = await import(indexUrl);
+
+          const STYLE_IDS = [
+            "winamp",
+            "terminal",
+            "splitflap",
+            "dotmatrix",
+            "carradio",
+            "vumeter",
+            "vinyl",
+          ];
+
+          const stateFor = (style) => ({
+            user: "octocat",
+            style,
+            theme: "dark",
+            now: {
+              name: "demo-repo",
+              description: "A demo repository used only to exercise every style in CI.",
+              language: "JavaScript",
+              url: "https://github.com/octocat/demo-repo",
+              lastPushed: "2026-09-01T12:00:00Z",
+              ageMinutes: 120,
+            },
+            note: "shipping the CI render check",
+            noteBy: "ci",
+            live: true,
+            rotation: [],
+            stats: {
+              commitsThisWeek: 12,
+              privateContributions: 0,
+              hourly: new Array(24).fill(0),
+            },
+            generatedAt: "2026-09-06T00:00:00Z",
+          });
+
+          for (const style of STYLE_IDS) {
+            const svg = render(stateFor(style), {});
+            if (typeof svg !== "string" || svg.length === 0) {
+              console.error(`style "${style}" did not return a non-empty string`);
+              process.exit(1);
+            }
+            writeFileSync(path.join(outDir, `${style}.svg`), svg, "utf8");
+          }
+          console.log(`Rendered ${STYLE_IDS.length} styles to ${outDir}`);
+          EOF
+          RENDER_OUT_DIR="$RUNNER_TEMP/commit-fm-render-check" node "$RUNNER_TEMP/render-all-styles.mjs"
+
+      # xml.etree is part of the Python 3 standard library already on the
+      # runner image, so this needs no install step to get a real XML
+      # parser: a well formed check is not the same thing as "looks like
+      # SVG", and a real parser is what tells the two apart.
+      - name: Verify each rendered style is safe, well formed XML
+        run: |
+          set -euo pipefail
+          FORBIDDEN=('<script' '<foreignObject' 'href="http' '<!ENTITY')
+          for svg in "$RUNNER_TEMP"/commit-fm-render-check/*.svg; do
+            echo "Checking $svg"
+            python3 -c "import xml.etree.ElementTree as ET; ET.parse('$svg')"
+            for token in "${FORBIDDEN[@]}"; do
+              if grep -F -q -- "$token" "$svg"; then
+                echo "Forbidden token '$token' found in $svg" >&2
+                exit 1
+              fi
+            done
+          done
+          echo "All styles rendered clean XML with none of the forbidden tokens."

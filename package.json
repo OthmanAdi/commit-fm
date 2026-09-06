@@ -1,0 +1,46 @@
+{
+  "name": "commit-fm",
+  "version": "0.1.0",
+  "description": "A now playing style banner for your GitHub profile README, rendered as an SVG by a scheduled GitHub Action. Zero runtime dependencies, no server, no model calls.",
+  "type": "module",
+  "bin": {
+    "commit-fm": "./bin/commit-fm.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin",
+    "src",
+    "schema"
+  ],
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "examples": "node scripts/render-examples.mjs"
+  },
+  "keywords": [
+    "github-profile",
+    "github-profile-readme",
+    "profile-readme",
+    "readme",
+    "dynamic-readme",
+    "animated-svg",
+    "svg",
+    "github-actions",
+    "now-playing",
+    "widget",
+    "ai-agents",
+    "mcp",
+    "developer-tools"
+  ],
+  "author": "Ahmad-Othman",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OthmanAdi/commit-fm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OthmanAdi/commit-fm/issues"
+  },
+  "homepage": "https://github.com/OthmanAdi/commit-fm#readme"
+}

@@ -1,0 +1,17 @@
+# Dependencies. This project ships zero of them, but keep any local,
+# accidental install out of version control.
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS and editor junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Local scratch files, never the committed examples in examples/
+*.tmp
