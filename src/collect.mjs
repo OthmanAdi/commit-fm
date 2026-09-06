@@ -69,7 +69,7 @@ const USER_AGENT = 'commit-fm (+https://github.com/OthmanAdi/commit-fm)';
 const API_VERSION = '2022-11-28';
 
 // GitHub documents up to 300 events across pages; per_page 100 x 3-10 pages
-// is generous headroom while "paginated only as far as needed" (BUILD-SPEC)
+// is generous headroom while the "paginate only as far as needed" rule
 // still applies: the loop below stops well before this on a short history.
 const MAX_PAGES = 10;
 const PER_PAGE = 100;

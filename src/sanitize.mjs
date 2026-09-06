@@ -175,7 +175,7 @@ function toGraphemes(str) {
  * in the codebase that untrusted text is allowed to pass through before it
  * reaches a style module; every style module trusts that any string flowing
  * through it already came from here (see the `State`/`Repo` typedefs in
- * BUILD-SPEC.md).
+ * the State typedef in state.mjs).
  *
  * The steps run in a deliberate order, not the order the requirements happen
  * to be numbered in:
@@ -262,7 +262,7 @@ export function sanitizeText(input, { maxGraphemes = 120 } = {}) {
  *   `null`, `undefined`, or a string with nothing left after filtering.
  * @throws {TypeError} if `input` is neither a string nor `null`/`undefined`.
  *   Identifiers come from structured config/API fields the spec types as
- *   `string` (see `State`/`Repo` in BUILD-SPEC.md); a non-string here is a
+ *   `string` (see the `State` and `Repo` typedefs in state.mjs); a non-string here is a
  *   caller bug, not attacker-controlled free text, so it fails loudly
  *   instead of being silently coerced into something that merely looks
  *   plausible.
