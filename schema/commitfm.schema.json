@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/OthmanAdi/commit-fm/main/schema/commitfm.schema.json",
+  "title": "Commit FM configuration",
+  "description": "Schema for commitfm.json, the control surface a human writes once and an agent may edit afterwards (the broadcast object only). Unknown top level keys are ignored rather than rejected, so a config written for a newer renderer still validates here, and an older renderer still accepts a config written by a newer one.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "user": {
+      "type": "string",
+      "description": "The GitHub login whose public activity drives derived mode: push events, repo descriptions and languages, and, only if the user opted in on their own profile, private contribution counts."
+    },
+    "style": {
+      "type": "string",
+      "enum": ["winamp", "terminal", "splitflap", "dotmatrix", "carradio", "vumeter", "vinyl"],
+      "description": "Which of the seven pure render style modules draws the banner. Each id names a src/styles/<id>.mjs module; an id outside this list has no matching renderer."
+    },
+    "theme": {
+      "type": "string",
+      "enum": ["light", "dark", "auto"],
+      "description": "Color scheme for the rendered banner. auto is resolved to light or dark before a style module ever sees the state, so no individual style module has to implement its own auto detection."
+    },
+    "exclude": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Repo names to hide from the banner entirely. Applied last, after every other selection rule such as pinning and rotation, and matches repo names exactly."
+    },
+    "pin": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Repo names to force into the rotation ahead of freshness ordering, so a repo the user cares about keeps showing even when it is not the most recently active one."
+    },
+    "broadcast": {
+      "type": "object",
+      "description": "An optional, time boxed override that lets an agent announce current work instead of the banner showing only derived GitHub activity. Absent means pure derived mode. A broadcast whose at plus ttlMinutes has already elapsed is ignored and the banner falls back to derived, so a forgotten note can never claim indefinitely that work is still happening.",
+      "properties": {
+        "repo": {
+          "type": "string",
+          "description": "Name of the repo the broadcast note is about, shown alongside the note so the banner reads as this repo, this note rather than an unattributed status line."
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Free text describing current work, for example refactoring the hook dispatcher. Attacker or agent influenced: always passed through sanitize.mjs before it becomes SVG text, regardless of what this schema allows through."
+        },
+        "by": {
+          "type": "string",
+          "description": "Identifier of whoever wrote the note, typically an agent id such as claude-opus-5. Empty or absent means the note's author is not tracked."
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when the note was written. Combined with ttlMinutes this determines whether the broadcast is still fresh enough to show."
+        },
+        "ttlMinutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440,
+          "default": 90,
+          "description": "How many minutes after at the broadcast stays live before the renderer treats it as stale and falls back to derived mode. Defaults to 90 and is clamped to the 1 through 1440 range, one day, so a mistyped value cannot pin a stale note in place indefinitely or expire it in the past."
+        }
+      }
+    }
+  }
+}
