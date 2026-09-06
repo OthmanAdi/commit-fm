@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="372" height="30" viewBox="0 0 372 30" role="img" aria-label="On air. Commit FM. Start your own station.">
+  <title>Commit FM: start your own station</title>
+  <style>
+    .m { font-family: ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace; }
+    @keyframes cfm-onair { 0%,100%{opacity:1} 50%{opacity:.35} }
+    .lamp { animation: cfm-onair 2.4s ease-in-out infinite; }
+    @media (prefers-reduced-motion:reduce){ .lamp{ animation:none } }
+  </style>
+
+  <rect x="0.5" y="0.5" width="371" height="29" rx="5" fill="#0d1117" stroke="#30363d"/>
+
+  <circle class="lamp" cx="18" cy="15" r="4" fill="#3fb950"/>
+  <text class="m" x="30" y="19" font-size="10" letter-spacing="1.4" fill="#3fb950">ON AIR</text>
+
+  <rect x="86" y="8" width="1" height="14" fill="#30363d"/>
+
+  <text class="m" x="98" y="19" font-size="10.5" font-weight="700" letter-spacing="1.4" fill="#ffb62e">COMMIT FM</text>
+
+  <rect x="186" y="8" width="1" height="14" fill="#30363d"/>
+
+  <text class="m" x="198" y="19" font-size="10" letter-spacing="1.2" fill="#8b949e">START YOUR OWN STATION</text>
+  <text class="m" x="350" y="19" font-size="11" fill="#8b949e">&#8594;</text>
+</svg>
