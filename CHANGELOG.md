@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+The activity graph (the bar row in terminal and winamp, the needle in vumeter) counted
+pushes per literal hour. A real push history is daily bursts across a handful of repos,
+not something spread evenly through the day, so the graph read as one bar out of
+twenty four for almost any real account, including the one this tool was built for. It
+now spans the same trailing week the pushes are already fetched for, about seven hours
+per bucket, so a normal week of work fills most of the row instead of one bar.
+
 The profile repository now excludes itself. The repository named after your account
 renders your profile page rather than being a project, and because this tool commits its
 own output into it, it would otherwise be the most recently pushed repository forever and

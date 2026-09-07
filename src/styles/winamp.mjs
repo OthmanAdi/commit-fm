@@ -5,9 +5,9 @@
  * spectrum and a playlist that scrolls the rotation.
  *
  * Review note this revision answers: "too much fast movement in the freq bars,
- * a bit distracting". The bars now stand at real pushes per hour and breathe
- * slowly around that height. The peak-hold caps, which were the fastest moving
- * thing in the first cut, are gone.
+ * a bit distracting". The bars now stand at real push counts across the
+ * trailing week and breathe slowly around that height. The peak-hold caps,
+ * which were the fastest moving thing in the first cut, are gone.
  *
  * The display panel stays dark in both themes on purpose. A real Winamp window
  * on a light desktop still had a black LCD, and inverting it loses the object.
@@ -111,7 +111,8 @@ export function render(state, opts = {}) {
     out.push(`<text x="${n(it.x)}" y="88" font-size="9" letter-spacing="1" fill="${it.fill}"${MONO}>${esc(it.text)}</text>`);
   }
 
-  // Spectrum panel: 24 bars, one per hour of real push history.
+  // Spectrum panel: 24 bars, one per ~7h bucket of real push history across
+  // the trailing week.
   const sx = 500, sw = W - sx - 10;
   out.push(`<rect x="${sx}" y="${dy}" width="${sw}" height="${dh}" fill="${LCD_BG}"/>`);
   out.push(`<rect x="${sx + 0.5}" y="${dy + 0.5}" width="${sw - 1}" height="${dh - 1}" fill="none" stroke="${LCD_EDGE}"/>`);

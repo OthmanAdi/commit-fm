@@ -28,7 +28,8 @@ import { sanitizeText, sanitizeIdent } from './sanitize.mjs';
  * @typedef {object} Stats
  * @property {number} pushesThisWeek
  * @property {number} privateContributions  0 unless the user opted in
- * @property {number[]} hourly  24 numbers, pushes per hour, oldest first
+ * @property {number[]} hourly  24 numbers, oldest first, one per ~7h bucket
+ *   across the trailing week
  */
 
 /**

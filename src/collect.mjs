@@ -1,8 +1,9 @@
 // @ts-check
 /**
  * Turns GitHub's public API into the derived half of the State object
- * (see state.mjs): which repos were pushed to, how recently, an hourly
- * commit histogram, and (with a token) an aggregate private-contribution
+ * (see state.mjs): which repos were pushed to, how recently, a 24-bucket
+ * push activity histogram spanning the trailing week, and (with a token) an
+ * aggregate private-contribution
  * count. Never throws: every failure mode collapses into one of the three
  * documented return shapes so the caller can decide, without a try/catch of
  * its own, whether to write a file, skip a commit, or exit quietly.
@@ -42,7 +43,8 @@ function safeSanitizeText(value, options) {
  * @typedef {object} CollectStats
  * @property {number} pushesThisWeek
  * @property {number} privateContributions
- * @property {number[]} hourly  24 numbers, oldest first
+ * @property {number[]} hourly  24 numbers, oldest first, one per ~7h bucket
+ *   across the trailing week (see HISTOGRAM_BUCKET_MS)
  */
 
 /**
@@ -79,8 +81,14 @@ const PER_PAGE = 100;
 const RATE_LIMIT_FLOOR = 5;
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const HOUR_MS = 60 * 60 * 1000;
 const HOURLY_SLOTS = 24;
+// A real push cadence is daily bursts across a handful of repos, not one
+// push every single hour, so a window sized in literal hours sits empty 23
+// slots out of 24 for almost anyone. The histogram instead spans the same
+// week the events are already fetched for (see fetchAllPushEvents), so each
+// slot covers WEEK_MS / HOURLY_SLOTS, about 7 hours, and a normal week of
+// work fills most of the row instead of one bar.
+const HISTOGRAM_BUCKET_MS = WEEK_MS / HOURLY_SLOTS;
 
 // Repo descriptions and languages are free text from the GitHub API; cap
 // generously but finitely before sanitizeText enforces it by grapheme.
@@ -148,21 +156,24 @@ function pushWeight(payload) {
 }
 
 /**
+ * 24 slots, oldest first, each covering HISTOGRAM_BUCKET_MS (about 7 hours),
+ * together spanning the trailing week.
+ *
  * @param {any[]} pushEvents
  * @param {number} nowMs
  * @returns {number[]}
  */
-function computeHourlyHistogram(pushEvents, nowMs) {
-  const hourly = new Array(HOURLY_SLOTS).fill(0);
+function computeActivityHistogram(pushEvents, nowMs) {
+  const buckets = new Array(HOURLY_SLOTS).fill(0);
   for (const evt of pushEvents) {
     const createdMs = Date.parse(evt?.created_at);
     if (Number.isNaN(createdMs)) continue;
-    const hoursAgo = Math.floor((nowMs - createdMs) / HOUR_MS);
-    if (hoursAgo < 0 || hoursAgo >= HOURLY_SLOTS) continue;
-    const idx = HOURLY_SLOTS - 1 - hoursAgo;
-    hourly[idx] += pushWeight(evt.payload);
+    const bucketsAgo = Math.floor((nowMs - createdMs) / HISTOGRAM_BUCKET_MS);
+    if (bucketsAgo < 0 || bucketsAgo >= HOURLY_SLOTS) continue;
+    const idx = HOURLY_SLOTS - 1 - bucketsAgo;
+    buckets[idx] += pushWeight(evt.payload);
   }
-  return hourly;
+  return buckets;
 }
 
 /**
@@ -364,7 +375,7 @@ export async function collect({ user, token, fetchImpl = fetch, now = () => new 
 
   const { pushEvents, rateRemaining: rateAfterEvents, etag: newEtag } = eventsResult;
 
-  const hourly = computeHourlyHistogram(pushEvents, nowMs);
+  const hourly = computeActivityHistogram(pushEvents, nowMs);
   const pushesThisWeek = computePushesThisWeek(pushEvents, nowMs);
 
   /** @type {Map<string, number>} full name -> most recent push, ms epoch */

@@ -92,7 +92,7 @@ export function render(state, opts = {}) {
       `fill="${a >= 4 ? "#b3271a" : "#4a4336"}" text-anchor="middle"${MONO}>${esc(label)}</text>`
     );
   }
-  out.push(`<text x="0" y="-64" font-size="8" letter-spacing="2" fill="#6b6152" text-anchor="middle"${MONO}>PUSHES PER HOUR</text>`);
+  out.push(`<text x="0" y="-64" font-size="8" letter-spacing="2" fill="#6b6152" text-anchor="middle"${MONO}>ACTIVITY, 7 DAYS</text>`);
   out.push(`<text x="0" y="-44" font-size="9" letter-spacing="1" fill="#8a7f6b" text-anchor="middle"${SANS}>VU</text>`);
 
   // Needle: real readings, stepped and held.

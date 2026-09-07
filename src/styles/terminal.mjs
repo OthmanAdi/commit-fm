@@ -133,7 +133,8 @@ export function render(state, opts = {}) {
     out.push(`<text x="${n(it.x)}" y="118" font-size="${n(it.size)}" fill="${it.fill}"${MONO}>${esc(it.text)}</text>`);
   }
 
-  // Spectrum: 24 bars, one per hour, standing at real push counts.
+  // Spectrum: 24 bars, one per ~7h bucket across the trailing week, standing
+  // at real push counts.
   const hourly = Array.isArray(state.stats.hourly) && state.stats.hourly.length === 24
     ? state.stats.hourly
     : new Array(24).fill(0);
@@ -143,7 +144,7 @@ export function render(state, opts = {}) {
     maxHeight: 30, fill: c.bar, minHeight: 2,
   }));
   out.push(`<rect x="${P}" y="153" width="${n(24 * (barW + barGap) - barGap)}" height="1" fill="${c.rule}"/>`);
-  out.push(`<text x="${P}" y="166" font-size="9" letter-spacing="1" fill="${c.dim}"${MONO}>PUSHES PER HOUR, LAST 24</text>`);
+  out.push(`<text x="${P}" y="166" font-size="9" letter-spacing="1" fill="${c.dim}"${MONO}>ACTIVITY, LAST 7 DAYS</text>`);
 
   // Queue. Scrolls only if it overflows, at a readable pace.
   const queue = state.rotation.map((r) => `${r.name} ${ago(r.ageMinutes)}`);

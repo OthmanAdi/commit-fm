@@ -128,13 +128,13 @@ describe('collect: tolerating a single bad repo', () => {
 });
 
 describe('collect: deriving stats from PushEvents', () => {
-  test('builds repos, the 24-slot hourly histogram and pushesThisWeek, and sanitizes API strings', async () => {
-    const threeHoursAgo = new Date(FIXED_NOW_MS - 3 * 60 * 60 * 1000).toISOString();
+  test('builds repos, the 24-slot activity histogram and pushesThisWeek, and sanitizes API strings', async () => {
+    const tenHoursAgo = new Date(FIXED_NOW_MS - 10 * 60 * 60 * 1000).toISOString();
     const fiveMinutesAgo = new Date(FIXED_NOW_MS - 5 * 60 * 1000).toISOString();
     const events = [
       {
         type: 'PushEvent',
-        created_at: threeHoursAgo,
+        created_at: tenHoursAgo,
         repo: { name: 'octocat/alpha' },
         payload: { size: 3, distinct_size: 2 },
       },
@@ -171,8 +171,8 @@ describe('collect: deriving stats from PushEvents', () => {
     // purpose: GitHub does not send them, so trusting them would report zero.
     assert.equal(result.stats.pushesThisWeek, 2);
     assert.equal(result.stats.hourly.length, 24);
-    assert.equal(result.stats.hourly[23], 1, 'the current hour bucket (last, oldest-first) gets the recent push');
-    assert.equal(result.stats.hourly[20], 1, '3 hours ago lands at index 23 - 3 = 20');
+    assert.equal(result.stats.hourly[23], 1, 'the current bucket (last, oldest-first) gets the recent push');
+    assert.equal(result.stats.hourly[22], 1, '10 hours ago is 1 bucket back at a ~7h bucket width: floor(10/7) = 1, index 23 - 1 = 22');
     assert.equal(result.stats.privateContributions, 0, 'no token means no GraphQL call, count stays 0');
   });
 
