@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1
 
 The activity graph (the bar row in terminal and winamp, the needle in vumeter) counted
 pushes per literal hour. A real push history is daily bursts across a handful of repos,

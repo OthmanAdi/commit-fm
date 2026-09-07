@@ -1,6 +1,6 @@
 {
   "name": "commit-fm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A now playing style banner for your GitHub profile README, rendered as an SVG by a scheduled GitHub Action. Zero runtime dependencies, no server, no model calls.",
   "type": "module",
   "bin": {
